@@ -31,7 +31,7 @@ document.addEventListener('alpine:init', () => {
 
             this.loading = true;
             try {
-                // 1. Insert Requisition Record with exact schema columns
+                // 1. Insert Requisition Record
                 let { data: reqData, error: reqError } = await supabase
                     .from('requisitions')
                     .insert([{
@@ -44,7 +44,8 @@ document.addEventListener('alpine:init', () => {
                     .single();
 
                 if (reqError) {
-                    console.error('Supabase Requisition Insert Error:', reqError);
+                    console.error('DETAILED SUPABASE ERROR:', reqError.message, reqError.details, reqError.hint);
+                    alert(`Insert Error: ${reqError.message}`);
                     throw reqError;
                 }
 
@@ -57,7 +58,9 @@ document.addEventListener('alpine:init', () => {
                         skill_id: skill.id || '00000000-0000-0000-0000-000000000001',
                         weight: skill.weight
                     }]);
-                    if (compError) console.error('Competency Insert Error:', compError);
+                    if (compError) {
+                        console.error('Competency Insert Error:', compError.message);
+                    }
                 }
 
                 // 3. Log Telemetry Action
@@ -66,7 +69,6 @@ document.addEventListener('alpine:init', () => {
                 alert('Requisition successfully published and vector match register initialized!');
             } catch (err) {
                 console.error('Error publishing requisition:', err);
-                alert('Failed to publish requisition. Check console for details.');
             } finally {
                 this.loading = false;
             }
