@@ -9,6 +9,7 @@ document.addEventListener('alpine:init', () => {
 
         async init() {
             await this.fetchCandidateData();
+            this.setupRealtimeListeners();
         },
 
         async fetchCandidateData() {
@@ -29,6 +30,16 @@ document.addEventListener('alpine:init', () => {
             } finally {
                 this.loading = false;
             }
+        },
+
+        setupRealtimeListeners() {
+            supabase
+                .channel('public:applications')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'applications' }, payload => {
+                    console.log('New application received:', payload.new);
+                    this.fetchCandidateData();
+                })
+                .subscribe();
         },
 
         async runVectorMatch(requisitionId) {
