@@ -31,12 +31,12 @@ document.addEventListener('alpine:init', () => {
 
             this.loading = true;
             try {
-                // 1. Insert Requisition Record
+                // 1. Insert Requisition Record using agency_name
                 let { data: reqData, error: reqError } = await supabase
                     .from('requisitions')
                     .insert([{
                         title: this.reqTitle,
-                        department: this.agency,
+                        agency_name: this.agency,
                         region_code: this.region,
                         employment_tier: this.tier
                     }])
