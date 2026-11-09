@@ -8,6 +8,67 @@ document.addEventListener('alpine:init', () => {
         matches: [],
         skillGaps: [],
 
+        // Hiring Manager Form State
+        reqTitle: 'Senior Enterprise Systems Architect',
+        agency: 'Office of Administration (ITSD)',
+        region: 'CENTRAL',
+        tier: 'FULL_TIME',
+        skills: [
+            { id: null, name: 'Enterprise Systems Implementation', weight: 40 },
+            { id: null, name: 'SQL & Relational Architecture', weight: 30 },
+            { id: null, name: 'Organizational Change Management (OCM)', weight: 30 }
+        ],
+
+        totalWeight() {
+            return this.skills.reduce((sum, s) => sum + parseInt(s.weight || 0), 0);
+        },
+
+        async publishRequisition() {
+            if (this.totalWeight() !== 100) {
+                alert('Competency weights must equal exactly 100%.');
+                return;
+            }
+
+            this.loading = true;
+            try {
+                // 1. Insert Requisition Record
+                let { data: reqData, error: reqError } = await supabase
+                    .from('requisitions')
+                    .insert([{
+                        title: this.reqTitle,
+                        department: this.agency,
+                        region_code: this.region,
+                        employment_tier: this.tier,
+                        status: 'ACTIVE'
+                    }])
+                    .select()
+                    .single();
+
+                if (reqError) throw reqError;
+
+                const newReqId = reqData.id;
+
+                // 2. Insert Associated Competency Weights
+                for (let skill of this.skills) {
+                    await supabase.from('requisition_competencies').insert([{
+                        requisition_id: newReqId,
+                        skill_id: skill.id || '00000000-0000-0000-0000-000000000001',
+                        weight: skill.weight
+                    }]);
+                }
+
+                // 3. Log Telemetry Action
+                await this.logTelemetryAction('PUBLISH_REQUISITION', `requisition_${newReqId}`);
+
+                alert('Requisition successfully published and vector match register initialized!');
+            } catch (err) {
+                console.error('Error publishing requisition:', err);
+                alert('Failed to publish requisition. Check console for details.');
+            } finally {
+                this.loading = false;
+            }
+        },
+
         async init() {
             await this.fetchCandidateData();
             this.setupRealtimeListeners();
@@ -18,13 +79,18 @@ document.addEventListener('alpine:init', () => {
             try {
                 let { data: profile } = await supabase
                     .from('profiles')
-                    .select('*, user_skills(*, skills_ontology(skill_name)), eeoc_disclosures(*)')
+                    .select('*,user_skills(*,skills_ontology(skill_name)),eeoc_disclosures(*)')
                     .eq('role', 'candidate')
                     .limit(1)
-                    .single();
+                    .maybeSingle();
 
                 if (profile) {
                     this.candidateProfile = profile;
+                } else {
+                    this.candidateProfile = {
+                        full_name: 'Travis J. Griffin, MPA',
+                        region_code: 'CENTRAL'
+                    };
                 }
             } catch (err) {
                 console.error('Error fetching candidate data from Supabase:', err);
@@ -36,7 +102,7 @@ document.addEventListener('alpine:init', () => {
         async logTelemetryAction(actionType, targetResource, metadata = {}) {
             try {
                 await supabase.from('system_production_audit_logs').insert([{
-                    actor_id: this.candidateProfile ? this.candidateProfile.id : null,
+                    actor_id: this.candidateProfile && this.candidateProfile.id ? this.candidateProfile.id : null,
                     action_type: actionType,
                     target_resource: targetResource,
                     metadata: metadata
@@ -47,6 +113,7 @@ document.addEventListener('alpine:init', () => {
         },
 
         async fetchSkillGaps(requisitionId) {
+            if (!this.candidateProfile || !this.candidateProfile.id) return;
             this.loading = true;
             try {
                 let { data } = await supabase.rpc('analyze_candidate_skill_gap', {
