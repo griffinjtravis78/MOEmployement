@@ -6,8 +6,9 @@
     <title>MOEmployment | State Government Skills-Based Platform</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script type="module" src="js/app.js"></script>
 </head>
-<body class="bg-slate-50 text-slate-900 font-sans" x-data="{ currentRole: 'candidate', region: 'CENTRAL', tier: 'FULL_TIME' }">
+<body class="bg-slate-50 text-slate-900 font-sans" x-data="moEmploymentApp">
 
     <!-- Header & Role Switcher -->
     <header class="bg-blue-900 text-white shadow-md">
@@ -32,24 +33,11 @@
     <main class="max-w-7xl mx-auto px-4 py-8">
         
         <!-- 1. Candidate Portal View -->
-        <div x-show="currentRole === 'candidate'" class="space-y-6" x-data="{ 
-            activeTab: 'portfolio',
-            skills: [
-                { name: 'Public Administration & Policy Governance', level: 4, verified: true },
-                { name: 'Instructional Design & ADDIE Methodology', level: 4, verified: true },
-                { name: 'SQL & Database Architecture', level: 3, verified: true },
-                { name: 'Change Management (OCM)', level: 4, verified: false }
-            ],
-            applications: [
-                { title: 'State Training Lead - Modernization', agency: 'Office of Administration', region: 'CENTRAL', status: 'assessment_pending', score: '94.5%' },
-                { title: 'Grants Compliance Specialist', agency: 'Department of Social Services', region: 'SW', status: 'applied', score: '88.0%' }
-            ]
-        }">
-            <!-- Candidate Header Banner -->
+        <div x-show="currentRole === 'candidate'" class="space-y-6" x-data="{ activeTab: 'portfolio' }">
             <div class="bg-white p-6 rounded-lg shadow border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                     <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded">Candidate Portal</span>
-                    <h2 class="text-xl font-bold text-blue-900 mt-1">Travis J. Griffin, MPA</h2>
+                    <h2 class="text-xl font-bold text-blue-900 mt-1" x-text="candidateProfile ? candidateProfile.full_name : 'Travis J. Griffin, MPA'"></h2>
                     <p class="text-sm text-slate-600">Assigned Region: <span class="font-semibold text-slate-800">Central (Jefferson City)</span> | Tier Eligibility: <span class="font-semibold text-slate-800">Full-Time, Part-Time, 1099 Gig</span></p>
                 </div>
                 <div class="flex gap-2">
@@ -60,36 +48,41 @@
 
             <!-- Tab 1: Living Skill Portfolio & Vector Graph -->
             <div x-show="activeTab === 'portfolio'" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Competency List -->
                 <div class="md:col-span-2 bg-white p-6 rounded-lg shadow border border-slate-200">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="font-semibold text-slate-900">Verified Competencies & Proficiency Graph</h3>
                         <span class="text-xs text-slate-500">Scale: 1 (Novice) to 4 (Expert)</span>
                     </div>
                     <div class="space-y-3">
-                        <template x-for="skill in skills">
-                            <div class="p-3 bg-slate-50 rounded border flex justify-between items-center">
-                                <div>
-                                    <p class="font-medium text-sm text-slate-800" x-text="skill.name"></p>
-                                    <span class="text-xs px-2 py-0.5 rounded font-semibold" :class="skill.verified ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'" x-text="skill.verified ? 'State Verified' : 'Pending Review'"></span>
-                                </div>
-                                <div class="text-right">
-                                    <span class="text-xs text-slate-500 uppercase block">Proficiency</span>
-                                    <span class="font-bold text-blue-900" x-text="'Level ' + skill.level"></span>
-                                </div>
+                        <div class="p-3 bg-slate-50 rounded border flex justify-between items-center">
+                            <div>
+                                <p class="font-medium text-sm text-slate-800">Public Administration & Policy Governance</p>
+                                <span class="text-xs px-2 py-0.5 rounded font-semibold bg-green-100 text-green-800">State Verified</span>
                             </div>
-                        </template>
+                            <div class="text-right">
+                                <span class="text-xs text-slate-500 uppercase block">Proficiency</span>
+                                <span class="font-bold text-blue-900">Level 4</span>
+                            </div>
+                        </div>
+                        <div class="p-3 bg-slate-50 rounded border flex justify-between items-center">
+                            <div>
+                                <p class="font-medium text-sm text-slate-800">Instructional Design & ADDIE Methodology</p>
+                                <span class="text-xs px-2 py-0.5 rounded font-semibold bg-green-100 text-green-800">State Verified</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-xs text-slate-500 uppercase block">Proficiency</span>
+                                <span class="font-bold text-blue-900">Level 4</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Artifact Uploads (Resumes, Transcripts, DD-214) -->
                 <div class="bg-white p-6 rounded-lg shadow border border-slate-200 space-y-4">
                     <h3 class="font-semibold text-slate-900">Credential Artifacts</h3>
                     <p class="text-xs text-slate-600">Upload official transcripts, DD-214 discharge forms, or professional certifications for automated NLP vectorization.</p>
                     
                     <div class="border-2 border-dashed border-slate-300 rounded-lg p-4 text-center cursor-pointer hover:border-blue-500 transition">
-                        <svg class="mx-auto h-8 w-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-                        <span class="text-xs font-medium text-blue-600 mt-2 block">Click to upload document</span>
+                        <span class="text-xs font-medium text-blue-600 block">Click to upload document</span>
                         <span class="text-[10px] text-slate-400">PDF, DOCX up to 25MB</span>
                     </div>
 
@@ -106,34 +99,11 @@
                 </div>
             </div>
 
-            <!-- Tab 2: Public Sector Applications -->
+            <!-- Tab 2: Applications -->
             <div x-show="activeTab === 'applications'" class="bg-white p-6 rounded-lg shadow border border-slate-200 space-y-4">
                 <h3 class="font-semibold text-slate-900">Active Public Sector Applications</h3>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="border-b text-xs text-slate-500 uppercase bg-slate-50">
-                                <th class="p-3">Position Title</th>
-                                <th class="p-3">Agency</th>
-                                <th class="p-3">Region</th>
-                                <th class="p-3">Vector Match Score</th>
-                                <th class="p-3">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody class="text-sm divide-y">
-                            <template x-for="app in applications">
-                                <tr>
-                                    <td class="p-3 font-medium text-slate-800" x-text="app.title"></td>
-                                    <td class="p-3 text-slate-600" x-text="app.agency"></td>
-                                    <td class="p-3 text-slate-600" x-text="app.region"></td>
-                                    <td class="p-3 font-bold text-blue-600" x-text="app.score"></td>
-                                    <td class="p-3">
-                                        <span class="px-2 py-1 text-xs font-semibold rounded bg-blue-100 text-blue-800 uppercase" x-text="app.status.replace('_', ' ')"></span>
-                                    </td>
-                                </tr>
-                            </template>
-                        </tbody>
-                    </table>
+                <div class="text-sm text-slate-600 p-4 bg-slate-50 rounded border">
+                    No active applications found. Use the Hiring Manager portal to match and apply to open regional requisitions.
                 </div>
             </div>
         </div>
@@ -144,7 +114,6 @@
             agency: 'Office of Administration (ITSD)',
             region: 'CENTRAL',
             tier: 'FULL_TIME',
-            salary: '$85,000 - $110,000',
             skills: [
                 { name: 'Enterprise Systems Implementation', weight: 40 },
                 { name: 'SQL & Relational Architecture', weight: 30 },
@@ -191,13 +160,11 @@
                     </div>
                 </div>
 
-                <!-- Competency Weighting Widget -->
                 <div class="pt-4 border-t">
                     <div class="flex justify-between items-center mb-2">
                         <h3 class="text-sm font-bold text-slate-800">Required Competency Weighting (Must Equal 100%)</h3>
                         <span class="text-xs font-bold px-2 py-1 rounded" :class="totalWeight() === 100 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'" x-text="'Total: ' + totalWeight() + '%'"></span>
                     </div>
-                    
                     <div class="space-y-2">
                         <template x-for="skill in skills">
                             <div class="flex items-center gap-4 bg-slate-50 p-2 rounded border">
@@ -223,21 +190,6 @@
                 <span class="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-0.5 rounded">Recruiter Command Center</span>
                 <h2 class="text-xl font-bold text-blue-900 mt-1">Regional Register & Pipeline Dashboard</h2>
                 <p class="text-sm text-slate-600 mt-1">Manage state agency requisition pools, evaluate candidate practical assessment scores, and track post-hire gig performance indexes.</p>
-                
-                <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="p-4 bg-slate-50 rounded border">
-                        <span class="text-xs font-bold text-slate-500 uppercase">Active Requisitions</span>
-                        <p class="text-2xl font-bold text-blue-900">24 Open</p>
-                    </div>
-                    <div class="p-4 bg-slate-50 rounded border">
-                        <span class="text-xs font-bold text-slate-500 uppercase">Total Candidates Registered</span>
-                        <p class="text-2xl font-bold text-blue-900">1,420</p>
-                    </div>
-                    <div class="p-4 bg-slate-50 rounded border">
-                        <span class="text-xs font-bold text-slate-500 uppercase">Average Match Precision</span>
-                        <p class="text-2xl font-bold text-green-600">91.4%</p>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -246,11 +198,7 @@
             <div class="bg-white p-6 rounded-lg shadow border border-slate-200">
                 <span class="bg-red-100 text-red-800 text-xs font-semibold px-2.5 py-0.5 rounded">OEO & Compliance Firewall</span>
                 <h2 class="text-xl font-bold text-blue-900 mt-1">Statutory Audit & Disparate Impact Ledger</h2>
-                <p class="text-sm text-slate-600 mt-1">Restricted-access audit ledger monitoring EEOC 4/5ths rule pass-through rates, Missouri RSMo 36.220 veteran preference point allocations, and Ban-the-Box disclosures.</p>
-                
-                <div class="mt-4 p-4 bg-amber-50 border border-amber-200 rounded text-xs text-amber-900">
-                    <strong>Security Notice:</strong> Demographic data isolation is enforced via strict PostgreSQL Row-Level Security (RLS). Access restricted exclusively to authorized OEO compliance officers.
-                </div>
+                <p class="text-sm text-slate-600 mt-1">Restricted-access audit ledger monitoring EEOC 4/5ths rule pass-through rates and Missouri veteran preference points.</p>
             </div>
         </div>
 
