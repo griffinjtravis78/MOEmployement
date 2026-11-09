@@ -49,7 +49,7 @@ document.addEventListener('alpine:init', () => {
         async fetchSkillGaps(requisitionId) {
             this.loading = true;
             try {
-                let { data, error } = await supabase.rpc('analyze_candidate_skill_gap', {
+                let { data } = await supabase.rpc('analyze_candidate_skill_gap', {
                     target_candidate_id: this.candidateProfile.id,
                     target_requisition_id: requisitionId
                 });
