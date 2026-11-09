@@ -5,7 +5,6 @@ document.addEventListener('alpine:init', () => {
         currentRole: 'candidate',
         loading: false,
         candidateProfile: null,
-        requisitions: [],
         matches: [],
 
         async init() {
@@ -15,8 +14,7 @@ document.addEventListener('alpine:init', () => {
         async fetchCandidateData() {
             this.loading = true;
             try {
-                // Fetch profile data for Travis J. Griffin
-                let { data: profile, error } = await supabase
+                let { data: profile } = await supabase
                     .from('profiles')
                     .select('*, user_skills(*, skills_ontology(skill_name)), eeoc_disclosures(*)')
                     .eq('role', 'candidate')
@@ -36,7 +34,7 @@ document.addEventListener('alpine:init', () => {
         async runVectorMatch(requisitionId) {
             this.loading = true;
             try {
-                let { data, error } = await supabase.rpc('match_candidates_to_requisition', {
+                let { data } = await supabase.rpc('match_candidates_to_requisition', {
                     target_requisition_id: requisitionId,
                     query_region_code: 'CENTRAL',
                     match_threshold: 0.5,
