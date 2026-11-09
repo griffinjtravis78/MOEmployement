@@ -33,6 +33,19 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
+        async logTelemetryAction(actionType, targetResource, metadata = {}) {
+            try {
+                await supabase.from('system_production_audit_logs').insert([{
+                    actor_id: this.candidateProfile ? this.candidateProfile.id : null,
+                    action_type: actionType,
+                    target_resource: targetResource,
+                    metadata: metadata
+                }]);
+            } catch (err) {
+                console.error('Error writing telemetry audit log:', err);
+            }
+        },
+
         async fetchSkillGaps(requisitionId) {
             this.loading = true;
             try {
@@ -43,6 +56,7 @@ document.addEventListener('alpine:init', () => {
 
                 if (data) {
                     this.skillGaps = data;
+                    await this.logTelemetryAction('ANALYZE_SKILL_GAP', `requisition_${requisitionId}`);
                 }
             } catch (err) {
                 console.error('Error fetching skill gap analysis:', err);
@@ -73,6 +87,7 @@ document.addEventListener('alpine:init', () => {
 
                 if (data) {
                     this.matches = data;
+                    await this.logTelemetryAction('RUN_VECTOR_MATCH', `requisition_${requisitionId}`);
                 }
             } catch (err) {
                 console.error('Error executing vector matching RPC:', err);
