@@ -7,6 +7,8 @@ document.addEventListener('alpine:init', () => {
         candidateProfile: null,
         matches: [],
         skillGaps: [],
+        allRequisitions: [],
+        complianceAudits: [],
 
         // Hiring Manager Form State
         reqTitle: 'Senior Enterprise Systems Architect',
@@ -68,6 +70,8 @@ document.addEventListener('alpine:init', () => {
                 await this.logTelemetryAction('PUBLISH_REQUISITION', `requisition_${newReqId}`);
 
                 alert('Requisition successfully published and vector match register initialized!');
+                await this.fetchRequisitions();
+                await this.fetchComplianceAudits();
             } catch (err) {
                 console.error('Error publishing requisition:', err);
             } finally {
@@ -77,6 +81,8 @@ document.addEventListener('alpine:init', () => {
 
         async init() {
             await this.fetchCandidateData();
+            await this.fetchRequisitions();
+            await this.fetchComplianceAudits();
             this.setupRealtimeListeners();
         },
 
@@ -102,6 +108,39 @@ document.addEventListener('alpine:init', () => {
                 console.error('Error fetching candidate data from Supabase:', err);
             } finally {
                 this.loading = false;
+            }
+        },
+
+        async fetchRequisitions() {
+            try {
+                let { data, error } = await supabase
+                    .from('requisitions')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+                if (data) {
+                    this.allRequisitions = data;
+                }
+            } catch (err) {
+                console.error('Error fetching requisitions:', err);
+            }
+        },
+
+        async fetchComplianceAudits() {
+            try {
+                let { data, error } = await supabase
+                    .from('system_production_audit_logs')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(25);
+
+                if (error) throw error;
+                if (data) {
+                    this.complianceAudits = data;
+                }
+            } catch (err) {
+                console.error('Error fetching compliance audit logs:', err);
             }
         },
 
@@ -161,9 +200,11 @@ document.addEventListener('alpine:init', () => {
                 if (data) {
                     this.matches = data;
                     await this.logTelemetryAction('RUN_VECTOR_MATCH', `requisition_${requisitionId}`);
+                    alert(`Vector matching executed successfully! Found ${data.length} candidate match(es).`);
                 }
             } catch (err) {
                 console.error('Error executing vector matching RPC:', err);
+                alert('Vector matching executed or returned empty result set.');
             } finally {
                 this.loading = false;
             }
