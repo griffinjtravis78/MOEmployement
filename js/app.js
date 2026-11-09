@@ -31,30 +31,33 @@ document.addEventListener('alpine:init', () => {
 
             this.loading = true;
             try {
-                // 1. Insert Requisition Record
+                // 1. Insert Requisition Record with exact schema columns
                 let { data: reqData, error: reqError } = await supabase
                     .from('requisitions')
                     .insert([{
                         title: this.reqTitle,
                         department: this.agency,
                         region_code: this.region,
-                        employment_tier: this.tier,
-                        status: 'ACTIVE'
+                        employment_tier: this.tier
                     }])
                     .select()
                     .single();
 
-                if (reqError) throw reqError;
+                if (reqError) {
+                    console.error('Supabase Requisition Insert Error:', reqError);
+                    throw reqError;
+                }
 
                 const newReqId = reqData.id;
 
                 // 2. Insert Associated Competency Weights
                 for (let skill of this.skills) {
-                    await supabase.from('requisition_competencies').insert([{
+                    let { error: compError } = await supabase.from('requisition_competencies').insert([{
                         requisition_id: newReqId,
                         skill_id: skill.id || '00000000-0000-0000-0000-000000000001',
                         weight: skill.weight
                     }]);
+                    if (compError) console.error('Competency Insert Error:', compError);
                 }
 
                 // 3. Log Telemetry Action
