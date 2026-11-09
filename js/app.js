@@ -6,6 +6,7 @@ document.addEventListener('alpine:init', () => {
         loading: false,
         candidateProfile: null,
         matches: [],
+        skillGaps: [],
 
         async init() {
             await this.fetchCandidateData();
@@ -27,6 +28,24 @@ document.addEventListener('alpine:init', () => {
                 }
             } catch (err) {
                 console.error('Error fetching candidate data from Supabase:', err);
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        async fetchSkillGaps(requisitionId) {
+            this.loading = true;
+            try {
+                let { data, error } = await supabase.rpc('analyze_candidate_skill_gap', {
+                    target_candidate_id: this.candidateProfile.id,
+                    target_requisition_id: requisitionId
+                });
+
+                if (data) {
+                    this.skillGaps = data;
+                }
+            } catch (err) {
+                console.error('Error fetching skill gap analysis:', err);
             } finally {
                 this.loading = false;
             }
