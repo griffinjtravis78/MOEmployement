@@ -31,14 +31,15 @@ document.addEventListener('alpine:init', () => {
 
             this.loading = true;
             try {
-                // 1. Insert Requisition Record using agency_name
+                // 1. Insert Requisition Record with exact table columns
                 let { data: reqData, error: reqError } = await supabase
                     .from('requisitions')
                     .insert([{
                         title: this.reqTitle,
                         agency_name: this.agency,
                         region_code: this.region,
-                        employment_tier: this.tier
+                        employment_type: this.tier,
+                        status: 'open'
                     }])
                     .select()
                     .single();
