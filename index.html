@@ -110,20 +110,7 @@
         </div>
 
         <!-- 2. Hiring Manager View -->
-        <div x-show="currentRole === 'manager'" class="space-y-6" x-data="{ 
-            reqTitle: 'Senior Enterprise Systems Architect',
-            agency: 'Office of Administration (ITSD)',
-            region: 'CENTRAL',
-            tier: 'FULL_TIME',
-            skills: [
-                { name: 'Enterprise Systems Implementation', weight: 40 },
-                { name: 'SQL & Relational Architecture', weight: 30 },
-                { name: 'Organizational Change Management (OCM)', weight: 30 }
-            ],
-            totalWeight() {
-                return this.skills.reduce((sum, s) => sum + parseInt(s.weight || 0), 0);
-            }
-        }">
+        <div x-show="currentRole === 'manager'" class="space-y-6">
             <div class="bg-white p-6 rounded-lg shadow border border-slate-200 space-y-4">
                 <div>
                     <span class="bg-purple-100 text-purple-800 text-xs font-semibold px-2.5 py-0.5 rounded">Hiring Manager Portal</span>
@@ -179,8 +166,9 @@
                     </div>
                 </div>
 
-                <button class="w-full bg-blue-900 text-white font-semibold py-2.5 rounded hover:bg-blue-800 transition text-sm">
-                    Publish Requisition & Initialize Vector Match Register
+                <button @click="publishRequisition()" :disabled="totalWeight() !== 100 || loading" class="w-full bg-blue-900 text-white font-semibold py-2.5 rounded hover:bg-blue-800 transition text-sm disabled:opacity-50">
+                    <span x-show="!loading">Publish Requisition & Initialize Vector Match Register</span>
+                    <span x-show="loading">Publishing Requisition...</span>
                 </button>
             </div>
         </div>
