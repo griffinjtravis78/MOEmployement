@@ -1,0 +1,11 @@
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Local environment variables or secret overrides
+.env
+.env.local
+
+# IDE and editor folders
+.vscode/
+.idea/
